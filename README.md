@@ -1,4 +1,5 @@
 # 2-Player-Battleship
+![image](https://user-images.githubusercontent.com/93615982/139945430-ef34a440-3898-47a5-a63f-838e6886d758.png)
 
 1.  The user will determine which level they would like to play 
 easy(e), medium(m) or hard(h). These will determine the size of 
@@ -14,6 +15,8 @@ to compare that index to the pre made grid (again 1s and 0s) and
 then proceed to AND (&) the location indicated by the user to the 
 static grid... i.e. if B7 is a hit then 1 and 1 still makes a 1 
 otherwise it is a miss... 
+![image](https://user-images.githubusercontent.com/93615982/139945388-6d1c8f26-aa3a-4dfd-a919-9e6b0faca23b.png)
+
 4.  The board that the player sees will be updated after each play 
 indicating where ships have been hit. 
 
