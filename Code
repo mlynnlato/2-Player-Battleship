@@ -1,0 +1,242 @@
+#include <iostream>
+#include <string>
+#include <ctime>
+#include <cstdlib>
+#include <ctype.h>
+using namespace std;
+
+string names[2];
+//5 battleship in each board
+int board1_battleship[5] = { -1,-1,-1,-1,-1 }; // initialize battleship positions with -1
+int board2_battleship[5] = { -1,-1,-1,-1,-1 }; // initialize battleship positions with -1
+int hit_array1[5] = { -1,-1,-1,-1,-1 }; // as player one hits opponent's battleship array is updated with the position value of battleship
+int hit_count1 = 0; // counter of player one's hit count
+int hit_array2[5] = { -1,-1,-1,-1,-1 }; // as player one hits opponent's battleship array is updated with the position value of battleship
+int hit_count2 = 0; // counter of player two's hit count
+int dim; //board dimension
+
+//return random value between 0 to limit-1
+int rand_value(int limit) {
+    srand(static_cast<unsigned int>(clock()));
+    int random = rand() % limit;
+    return random;
+}
+//function to get the index of an element in array
+int index_of_array(int* arr, int size, int val) {
+    for (int i = 0; i < size; i++) {
+        if (arr[i] == val)
+            return i;
+    }
+    return -1;
+}
+// display two boards of two players
+void display_player_boards(int dim, string lvl) {
+
+    if (lvl == "hard") {
+    cout << "Current Game Boards:" << endl;
+    cout << "    " << names[0] << "'s board \t   " << names[1] << "'s board"; // display name of two players at the top of the board
+    cout << endl << " ";
+    
+    for(int i = 0; i < dim; i++)
+    {
+        cout << " " << char(65 + i); // display the x- axis , column position value of board of battleships as A, B,ETC
+    }
+    cout << "\t \t ";
+    // print A B C D for 2nd board
+    for (int i = 0; i < dim; i++)
+    {
+        cout << " " << char(65 + i);
+    }
+}
+    else {
+        cout << "Current Game Boards:" << endl;
+        cout << " " << names[0] << "'s board \t " << names[1] << "'s board"; // display name of two players at the top of the board
+        cout << endl << " ";
+        for (int i = 0; i < dim; i++)
+        {
+            cout << " " << char(65 + i); // display the x- axis , column position value of board of battleships as A, B,ETC
+        }
+        cout << "\t ";
+        // print A B C D for 2nd board
+        for (int i = 0; i < dim; i++)
+        {
+            cout << " " << char(65 + i);
+        }
+    }
+
+    cout << endl;
+    int val1, val2;
+    for (int i = 0; i < dim; i++) {
+        cout << i + 1 << " "; // print row numbers like 1 2 3 4 for 1st board
+        for (int j = 0; j < dim; j++) {
+            val1 = i * dim + j; // position value of the cell
+            if (index_of_array(hit_array2, 5, val1) == -1)
+                cout << "- "; // if it is not present in the hit array created by player-2, show -
+            else
+                cout << "X ";   // if it is present in the hit array created by player-2, show X indicating player-2 has hit the battleship
+        }
+        cout << "\t" << i + 1 << " ";   // print row numbers like 1 2 3 4 for 2nd board
+        for (int j = 0; j < dim; j++) {
+            val2 = i * dim + j; // position value of the cell
+            if (index_of_array(hit_array1, 5, val2) == -1)
+                cout << "- ";  // if it is not present in the hit array created by player-1, show -
+            else
+                cout << "X ";  // if it is present in the hit array created by player-1, show X indicating player-1 has hit the battleship
+        }
+        cout << endl;
+    }
+}
+
+// process the answer of user
+bool process_ans(string ans, int dim, int* arr, int size, int player) {
+    char col = ans.substr(0, 1)[0];
+    col = toupper(col); // first character indicates Col. For user input A5, col is A (toupper forces input to uppercase so no error)
+    int row = stoi(ans.substr(1, 1)); //2nd character indicates row. For user input A5, row is 5
+
+    //cout << row << col<<int(col)<<endl;
+
+    int val = (row - 1) * dim + int(col) - 65;
+    int idx = index_of_array(arr, 5, val);
+    if (idx != -1) {
+        cout << "Good job soldier, " << names[player] << " that was a HIT!" << endl;
+        cout << names[player] << " sank " << names[!player] << "'s destroyer!" << endl;
+        arr[idx] = -1;
+        if (player == 0) {
+            hit_array1[hit_count1++] = val; //increase the hit count of player -1 and store the position val of battleship in hit_array1
+        }
+        else if (player == 1) {
+            hit_array2[hit_count2++] = val;  //increase the hit count of player -2 and store the position val of battleship in hit_array2
+        }
+        return true;
+    }
+    else {
+        if (player == 0) {
+            if (index_of_array(hit_array1, 5, val) != -1) {
+                cout << "You have already hit this. Try again soldier." << endl; // if player-1 enters a battleship position he already sunk a ship
+                return true;
+            }
+        }
+        else if (player == 1) {
+            if (index_of_array(hit_array2, 5, val) != -1) {
+                cout << "You have already hit this. Try again soldier." << endl; // if player-1 enters a battleship position he already sunk a ship
+                return true;
+            }
+        }
+        cout << "I am sorry " << names[player] << " that was a MISS!" << endl; // it is not a hit
+        return false;
+    }
+}
+
+// checks if all battleships are uncovered
+bool is_all_found(int player) {
+    if (player == 0 && hit_count1 == 4) //checks player name and if their hit count reached 4 (variable can be changed)
+        return true;
+    if (player == 1 && hit_count2 == 4)//checks player name and if their hit count reached 4 (variable can be changed)
+        return true;
+    return false; //if none hit 5 yet, game continues
+}
+
+//the main function
+int main() {
+    char level;
+    int no_of_ship = 5;
+    string levelstr;
+    cout << "Welcome to battle game simulator. Please choose your level of difficulty. (e=easy,m=medium,h=hard) :" << endl;
+    cin >> level;
+    while (level != 'e' && level != 'h' && level != 'm' && level != 'E' && level != 'M' && level != 'H') // failsafe so the game does not end with wrong input
+    {
+        cout << "Please Input level of difficulty. (e=easy,m=medium,h=hard) :" << endl;
+        cin >> level;
+    }
+    if (level == 'e' || level == 'E') {
+        dim = 5;
+        levelstr = "easy";
+    }
+    else if (level == 'm' || level == 'M') {
+        dim = 6;
+        levelstr = "medium";
+
+    }
+    if (level == 'h' || level == 'H') {
+        dim = 7;
+        levelstr = "hard";
+    }
+    cout << endl << "How to Play: Players take turns firing shots (by calling out a grid coordinate) to attempt to hit the opponent's enemy ships, there will be 5 ships in total." << endl;
+    cout << "1. On your turn, call out a letter and a number that identifies a row and column on your target grid." << endl;
+    cout << "2. The first player to sink all five of their opponent's ships wins the game." << endl;
+    cout << "3. Double Check your input coordinates, if wrong, you lose your turn Soldier!" << endl << endl;
+    cout << "Simple right? Goodluck Soldier!" << endl << endl;
+    int rval1, rval2;
+    int idx;
+    for (int i = 0; i < 5; i++) { // loop goes through 5 iterations of putting ship in array at random point with no repeating
+        rval1 = rand_value(dim * dim);
+        idx = index_of_array(board1_battleship, 5, rval1);
+        while (idx != -1) { //parameter to make sure ship is placed in same spot twice
+            rval1 = rand_value(dim * dim);
+            idx = index_of_array(board1_battleship, 5, rval1);
+        }
+        board1_battleship[i] = rval1; //assigns the ship to index on board 1
+
+        rval2 = rand_value(dim * dim);
+        while (rval2 == rval1) {
+            rval2 = rand_value(dim * dim); //don't want the board to be same
+        }
+        idx = index_of_array(board2_battleship, 5, rval2);
+        while (idx != -1) { //parameter to make sure ship isn't placed in same spot twice
+            rval2 = rand_value(dim * dim);
+            idx = index_of_array(board2_battleship, 5, rval2);
+        }
+        board2_battleship[i] = rval2;//assigns the ship to index on board 2
+    }
+
+
+    string nm;
+    cout << "You have chosen a " << levelstr << " level game" << endl << endl;
+    cout << "Please enter in player #1's name: ";
+    cin >> nm;
+    names[0] = nm; //assigns players 1(0) name
+    cout << "Please enter in player #2's name: ";
+    cin >> nm;
+    names[1] = nm; //assigns player 2(1) name
+
+//display_player_boards(dim);
+    string ans;
+    int turn = 0;
+    int opponent = 1;
+    bool result;
+    while (1) { //infinite loops and will only stop once a player wins (returns break) or error
+        display_player_boards(dim, levelstr);
+        cout << names[turn] << "'s Turn, please enter a location (Example: A5):";
+        cin >> ans; //receieves answer as string
+        if (turn == 0) { //checks to players turn, this is player 1's turn
+            result = process_ans(ans, dim, board2_battleship, 5, 0); //send input to function
+            if (!result) { //this is so that if the player already hit a location, it would allow them to take another turn
+                turn = 1;
+            }
+            /**else {
+                display_player_boards(dim);
+            }**/
+        }
+        else if (turn == 1) { //player 2's turn
+            result = process_ans(ans, dim, board1_battleship, 5, 1);
+            if (!result) {
+                turn = 0;
+            }
+            /**else {
+                display_player_boards(dim);
+            }**/
+
+        }
+        if (is_all_found(1)) { //checks each turn and player if the game is over detailed by hit_count
+            cout << names[1] << " has won! Game ended.";
+            break;
+        }
+        if (is_all_found(0)) { //checks each turn and player if the game is over detailed by hit_count
+            cout << names[0] << " has won! Game ended.";
+            break;
+        }
+    }
+
+    return 0;
+}
+
